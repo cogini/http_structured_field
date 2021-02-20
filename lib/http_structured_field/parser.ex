@@ -244,6 +244,29 @@ defmodule HttpStructuredField.Parser do
     |> optional(parameters)
     |> label("sf-item")
 
+  # OWS            = *( SP / HTAB ) ; optional whitespace
+  # HTAB           =  %x09 ; horizontal tab
+
+  ows =
+    ascii_char([0x20, 0x09])
+
+  defp process_list(_rest, [_value] = acc, context, _line, _offset) do
+    {acc, context}
+  end
+  defp process_list(_rest, acc, context, _line, _offset) do
+    {[:list, Enum.reverse(acc)], context}
+  end
+
+  sf_list =
+    sf_item
+    |> repeat(
+      ignore(optional(ows))
+      |> ignore(ascii_char([?,]))
+      |> ignore(optional(ows))
+      |> concat(sf_item)
+    )
+    |> post_traverse(:process_list)
+
   defparsec(:parsec_parse, sf_item)
 
   @spec parse(binary()) ::
