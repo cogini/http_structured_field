@@ -239,9 +239,20 @@ defmodule HttpStructuredField.Parser do
     repeat(parameter)
     |> label("parameters")
 
+
+  # If there are parameters, make a tuple like {tag, value, params}
+  defp process_parameters(_rest, [_value] = acc, context, _line, _offset) do
+    {acc, context}
+  end
+  defp process_parameters(_rest, acc, context, _line, _offset) do
+    [{tag, value} | params] = Enum.reverse(acc)
+    {[{tag, value, params}], context}
+  end
+
   sf_item =
     bare_item
     |> optional(parameters)
+    |> post_traverse(:process_parameters)
     |> label("sf-item")
 
   # OWS            = *( SP / HTAB ) ; optional whitespace
@@ -250,11 +261,11 @@ defmodule HttpStructuredField.Parser do
   ows =
     ascii_char([0x20, 0x09])
 
-  defp process_list(_rest, [_value] = acc, context, _line, _offset) do
-    {acc, context}
+  defp process_list(_rest, [{:list, [value]}], context, _line, _offset) do
+    {[value], context}
   end
   defp process_list(_rest, acc, context, _line, _offset) do
-    {[:list, Enum.reverse(acc)], context}
+    {acc, context}
   end
 
   sf_list =
@@ -265,9 +276,10 @@ defmodule HttpStructuredField.Parser do
       |> ignore(optional(ows))
       |> concat(sf_item)
     )
+    |> tag(:list)
     |> post_traverse(:process_list)
 
-  defparsec(:parsec_parse, sf_item)
+  defparsec(:parsec_parse, sf_list)
 
   @spec parse(binary()) ::
           {:ok, {:integer, integer()} | {:decimal, float()} | {:boolean, bool()}}
