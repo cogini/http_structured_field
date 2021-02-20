@@ -63,4 +63,11 @@ defmodule ParserTest do
       assert {:error, "Invalid base64"} == Parser.parse(":cHJldGVuZCB0aGlzIGlzIGJpbmFyeSBjb250ZW50Lg=:")
     end
   end
+
+  test "parameters" do
+    # assert {:ok, {:integer, 1}} == Parser.parsec_parameter("; a")
+    assert {:ok, [{:integer, 1}, {"jake", {:boolean, true}}, {"b", {:boolean, false}}]} == Parser.parse("1; jake; b=?0")
+    assert {:ok, [{:integer, 1}, {"a", {:boolean, true}}, {"b", {:boolean, false}}]} == Parser.parse("1; a; b=?0")
+  end
+
 end
