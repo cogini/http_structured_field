@@ -1,18 +1,11 @@
 defmodule HttpStructuredField do
   @moduledoc """
-  Documentation for `HttpStructuredField`.
+  Top level API to parse and serialize data.
   """
 
   @doc """
-  Hello world.
-
-  ## Examples
-
-      iex> HttpStructuredField.hello()
-      :world
-
+  Parse field data.
   """
-  def hello do
-    :world
-  end
+  @spec parse(binary()) :: {:ok, term()} | {:error, term()}
+  defdelegate parse(value), to: HttpStructuredField.Parser
 end
