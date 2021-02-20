@@ -19,18 +19,35 @@ defmodule HttpStructuredField.MixProject do
         # flags: ["-Werror_handling", "-Wrace_conditions"],
         # flags: ["-Wunmatched_returns", :error_handling, :race_conditions, :underspecs],
         # ignore_warnings: "dialyzer.ignore-warnings"
-      ]
+      ],
+      # test_coverage: [tool: Coverex.Task],
+      test_coverage: [tool: ExCoveralls],
+      preferred_cli_env: [
+        coveralls: :test,
+        "coveralls.detail": :test,
+        "coveralls.post": :test,
+        "coveralls.html": :test
+      ],
+      # xref: [
+      #   exclude: [EEx, :cover]
+      # ]
     ]
   end
 
   def application do
     [
-      extra_applications: [:logger]
+      extra_applications: [:logger] ++ extra_applications(Mix.env()),
     ]
   end
 
+  defp extra_applications(env) when env in [:dev, :test], do: [:eex]
+  defp extra_applications(_),     do: []
+
   defp deps do
     [
+      {:credo, "~> 1.5", only: [:dev, :test], runtime: false},
+      # {:coverex, "~> 1.5", only: [:dev, :test], runtime: false},
+      {:excoveralls, "~> 0.14.0", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 0.5.1", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.23", only: :dev, runtime: false},
       {:nimble_parsec, "~> 1.1"}
