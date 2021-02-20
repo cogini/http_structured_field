@@ -102,8 +102,6 @@ defmodule HttpStructuredField.Parser do
   tchar =
     choice([
       ascii_char([
-        ?:,
-        ?/,
         ?!,
         ?#,
         0x24, # $
@@ -123,15 +121,53 @@ defmodule HttpStructuredField.Parser do
 
   sf_token =
     choice([alpha, ascii_char([?*])])
-    |> optional(repeat(tchar))
+    |> optional(repeat(choice([tchar, ascii_char([?:, ?/])])))
     |> post_traverse(:parse_string)
     |> label("token")
     |> unwrap_and_tag(:token)
 
+  # sf-binary = ":" *(base64) ":"
+  # base64    = ALPHA / DIGIT / "+" / "/" / "="
+
+  base64 =
+    choice([
+      alpha,
+      digit,
+      ascii_char([
+        0x2b, # +
+        ?/,
+        ?=
+      ])
+    ])
+    |> label("base64")
+
+  defp parse_base64(_rest, acc, context, _line, _offset) do
+    value =
+      acc
+      |> Enum.reverse()
+      |> IO.iodata_to_binary()
+
+    case Base.decode64(value) do
+      {:ok, binary} ->
+        {[binary], context}
+
+      :error ->
+        {:error, "Invalid base64"}
+    end
+  end
+
+  sf_binary =
+    ignore(ascii_char([?:]))
+    |> repeat(lookahead_not(ascii_char([?:])) |> concat(base64))
+    |> ignore(ascii_char([?:]))
+    |> label("binary")
+    |> post_traverse(:parse_base64)
+    |> unwrap_and_tag(:binary)
+
   # sf-item   = bare-item parameters
   # bare-item = sf-integer / sf-decimal / sf-string / sf-token
   #              / sf-binary / sf-boolean
-  sf_item = choice([sf_boolean, sf_decimal, sf_integer, sf_string, sf_token]) |> label("item")
+  sf_item = choice([sf_token, sf_boolean, sf_binary, sf_string, sf_decimal, sf_integer]) |> label("item")
 
   defparsec(:parsec_parse, sf_item)
 

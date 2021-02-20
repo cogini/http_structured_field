@@ -56,10 +56,10 @@ defmodule ParserTest do
     end
   end
 
-
-  # describe "Parse invalid" do
-  #   test "Parse invalid" do
-  #     assert {:ok, {:boolean, true}} == Parser.parse("fish")
-  #   end
-  # end
+  describe "binary" do
+    test "binary" do
+      assert {:ok, {:binary, "pretend this is binary content."}} == Parser.parse(":cHJldGVuZCB0aGlzIGlzIGJpbmFyeSBjb250ZW50Lg==:")
+      assert {:error, "Invalid base64"} == Parser.parse(":cHJldGVuZCB0aGlzIGlzIGJpbmFyeSBjb250ZW50Lg=:")
+    end
+  end
 end
