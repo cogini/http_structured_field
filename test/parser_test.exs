@@ -28,11 +28,6 @@ defmodule ParserTest do
       assert {:ok, {:decimal, -1.334}} == Parser.parse("-01.334")
       assert {:ok, {:decimal, 5.23}} == Parser.parse("5.230")
       assert {:ok, {:decimal, 0}} == Parser.parse("-0.0")
-
-      # Note that the serialization algorithm (Section 4.1.5) rounds input
-      # with more than three digits of precision in the fractional component.
-      # If an alternative rounding strategy is desired, this should be
-      # specified by the header definition to occur before serialization.
     end
   end
 
@@ -43,9 +38,21 @@ defmodule ParserTest do
     end
   end
 
-  describe "Parse invalid" do
-    test "Parse invalid" do
-      assert {:ok, {:boolean, true}} == Parser.parse("fish")
+  describe "Parse string" do
+    test "Parse string" do
+      assert {:ok, {:string, "hi"}} == Parser.parse(~S("hi"))
+      assert {:ok, {:string, ""}} == Parser.parse(~S(""))
+    end
+
+    test "Parse string with escapes" do
+      assert {:ok, {:string, "hi\"ho"}} == Parser.parse(~S("hi\"ho"))
+      assert {:ok, {:string, "hi\\ho"}} == Parser.parse(~S("hi\\ho"))
     end
   end
+
+  # describe "Parse invalid" do
+  #   test "Parse invalid" do
+  #     assert {:ok, {:boolean, true}} == Parser.parse("fish")
+  #   end
+  # end
 end
