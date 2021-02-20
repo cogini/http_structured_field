@@ -3,12 +3,11 @@
 Elixir library to parse and generate RFC 8941 Structured Field Values for HTTP.
 
 HTTP headers often need to carry complex structures such as lists of values.
-[RFC 8941]((https://tools.ietf.org/html/rfc8941) specifies a standard format
+[RFC 8941](https://tools.ietf.org/html/rfc8941) specifies a standard format
 for these fields independent of the RFCs that define the headers.
 
-This is a work in progress.
-
-It currently knows how to parse items (including parmeters), and lists of items.
+This is a work in progress. It currently knows how to parse "items" (including
+parmeters), and lists of items.
 
 ## Usage
 
