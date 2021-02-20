@@ -31,8 +31,8 @@ iex> HttpStructuredField.parse(":cHJldGVuZCB0aGlzIGlzIGJpbmFyeSBjb250ZW50Lg==:")
 iex> HttpStructuredField.parse("foo, bar")
 {:ok, {:list, [{:token, "foo"}, {:token, "bar"}]}}
 
-iex> HttpStructuredField.parse("foo, bar")
-{:ok, {:list, [{:token, "foo"}, {:token, "bar"}]}}
+iex> HttpStructuredField.parse("1; abc; b=?0")
+{:ok, {:integer, 1, [{"abc", {:boolean, true}}, {"b", {:boolean, false}}]}}
 ```
 
 ## Installation
