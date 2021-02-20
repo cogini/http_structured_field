@@ -41,6 +41,7 @@ defmodule ParserTest do
   describe "string" do
     test "string" do
       assert {:ok, {:string, "hi"}} == Parser.parse(~S("hi"))
+      assert {:ok, {:string, "hello world"}} == Parser.parse(~S("hello world"))
       assert {:ok, {:string, ""}} == Parser.parse(~S(""))
     end
 

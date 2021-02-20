@@ -6,6 +6,35 @@ HTTP headers often need to carry complex structures such as lists of values.
 [RFC 8941]((https://tools.ietf.org/html/rfc8941) specifies a standard format
 for these fields independent of the RFCs that define the headers.
 
+This is a work in progress. It currently knows how to parse bare "item" content:
+
+```abnf
+bare-item = sf-integer / sf-decimal / sf-string / sf-token
+             / sf-binary / sf-boolean
+```
+
+## Usage
+
+```elixir
+iex> HttpStructuredField.parse("42")
+{:ok, {:integer, 42}}
+
+iex> HttpStructuredField.parse("4.5")
+{:ok, {:decimal, 4.5}}
+
+iex> HttpStructuredField.parse("?1")
+{:ok, {:boolean, true}}
+
+iex> HttpStructuredField.parse(~S("hello world"))
+{:ok, {:string, "hello world"}}
+
+iex> HttpStructuredField.parse("foo123/456")
+{:ok, {:token, "foo123/456"}}
+
+iex> HttpStructuredField.parse(":cHJldGVuZCB0aGlzIGlzIGJpbmFyeSBjb250ZW50Lg==:")
+{:ok, {:binary, "pretend this is binary content."}}
+```
+
 ## Installation
 
 If [available in Hex](https://hex.pm/docs/publish), the package can be installed
