@@ -32,7 +32,8 @@ defmodule HttpStructuredField.MixProject do
   defp deps do
     [
       {:dialyxir, "~> 0.5.1", only: [:dev, :test], runtime: false},
-      {:ex_doc, "~> 0.23", only: :dev, runtime: false}
+      {:ex_doc, "~> 0.23", only: :dev, runtime: false},
+      {:nimble_parsec, "~> 1.1"}
     ]
   end
 
