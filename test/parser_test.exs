@@ -3,7 +3,7 @@ defmodule ParserTest do
 
   alias HttpStructuredField.Parser
 
-  test "Parse integer" do
+  test "integer" do
     # Examples from RFC
     assert {:ok, {:integer, 1}} == Parser.parse("1")
     assert {:ok, {:integer, 42}} == Parser.parse("42")
@@ -16,8 +16,8 @@ defmodule ParserTest do
     assert {:ok, {:integer, 0}} == Parser.parse("-0")
   end
 
-  describe "Parse decimal" do
-    test "Parse decimal" do
+  describe "decimal" do
+    test "decimal" do
       # Examples from RFC
       assert {:ok, {:decimal, 4.5}} == Parser.parse("4.5")
     end
@@ -31,24 +31,31 @@ defmodule ParserTest do
     end
   end
 
-  describe "Parse boolean" do
-    test "Parse boolean" do
+  describe "boolean" do
+    test "boolean" do
       assert {:ok, {:boolean, true}} == Parser.parse("?1")
       assert {:ok, {:boolean, false}} == Parser.parse("?0")
     end
   end
 
-  describe "Parse string" do
-    test "Parse string" do
+  describe "string" do
+    test "string" do
       assert {:ok, {:string, "hi"}} == Parser.parse(~S("hi"))
       assert {:ok, {:string, ""}} == Parser.parse(~S(""))
     end
 
-    test "Parse string with escapes" do
+    test "string with escapes" do
       assert {:ok, {:string, "hi\"ho"}} == Parser.parse(~S("hi\"ho"))
       assert {:ok, {:string, "hi\\ho"}} == Parser.parse(~S("hi\\ho"))
     end
   end
+
+  describe "token" do
+    test "token" do
+      assert {:ok, {:token, "foo123/456"}} == Parser.parse("foo123/456")
+    end
+  end
+
 
   # describe "Parse invalid" do
   #   test "Parse invalid" do

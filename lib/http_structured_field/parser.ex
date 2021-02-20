@@ -81,11 +81,57 @@ defmodule HttpStructuredField.Parser do
     |> post_traverse(:parse_string)
     |> unwrap_and_tag(:string)
 
+  # sf-token = ( ALPHA / "*" ) *( tchar / ":" / "/" )
+  # tchar          = "!" / "#" / "$" / "%" / "&" / "'" / "*"
+  #              / "+" / "-" / "." / "^" / "_" / "`" / "|" / "~"
+  #              / DIGIT / ALPHA
+  #              ; any VCHAR, except delimiters
+  # VCHAR          =  %x21-7E ; visible (printing) characters
+
+  # ALPHA          =  %x41-5A / %x61-7A   ; A-Z / a-z
+  alpha =
+    ascii_char([0x41..0x5a, 0x61..0x7a]) |> label("ALPHA")
+
+  # DIGIT          =  %x30-39 ; 0-9
+  digit =
+    ascii_char([0x30..0x39]) |> label("DIGIT")
+
+  # tchar          = "!" / "#" / "$" / "%" / "&" / "'" / "*"
+  #              / "+" / "-" / "." / "^" / "_" / "`" / "|" / "~"
+  #              / DIGIT / ALPHA
+  tchar =
+    choice([
+      ascii_char([
+        ?:,
+        ?/,
+        ?!,
+        ?#,
+        0x24, # $
+        0x25, # %,
+        0x26, # &
+        0x27, # '
+        0x2a, # *
+        0x2b, # +
+        0x2d, # -
+        0x2e, # .
+        0x5e, # ^
+        0x5f, # _
+        0x60, # `
+        0x7c, # |
+        0x7e, # ~
+      ]), digit, alpha]) |> label("tchar")
+
+  sf_token =
+    choice([alpha, ascii_char([?*])])
+    |> optional(repeat(tchar))
+    |> post_traverse(:parse_string)
+    |> label("token")
+    |> unwrap_and_tag(:token)
 
   # sf-item   = bare-item parameters
   # bare-item = sf-integer / sf-decimal / sf-string / sf-token
   #              / sf-binary / sf-boolean
-  sf_item = choice([sf_boolean, sf_decimal, sf_integer, sf_string]) |> label("item")
+  sf_item = choice([sf_boolean, sf_decimal, sf_integer, sf_string, sf_token]) |> label("item")
 
   defparsec(:parsec_parse, sf_item)
 
