@@ -1,28 +1,59 @@
 defmodule HttpStructuredField.MixProject do
   use Mix.Project
 
+  @github "https://github.com/cogini/http_structured_field"
+
   def project do
     [
       app: :http_structured_field,
       version: "0.1.0",
       elixir: "~> 1.11",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      description: description(),
+      package: package(),
+      docs: docs(),
+      deps: deps(),
+      dialyzer: [
+        plt_add_apps: [:mix, :eex]
+        # plt_add_deps: true,
+        # flags: ["-Werror_handling", "-Wrace_conditions"],
+        # flags: ["-Wunmatched_returns", :error_handling, :race_conditions, :underspecs],
+        # ignore_warnings: "dialyzer.ignore-warnings"
+      ]
     ]
   end
 
-  # Run "mix help compile.app" to learn about applications.
   def application do
     [
       extra_applications: [:logger]
     ]
   end
 
-  # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      # {:dep_from_hexpm, "~> 0.3.0"},
-      # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
+      {:dialyxir, "~> 0.5.1", only: [:dev, :test], runtime: false},
+      {:ex_doc, "~> 0.23", only: :dev, runtime: false}
+    ]
+  end
+
+  defp description do
+    "Mix task to generate Ecto migrations from SQL schema file"
+  end
+
+  defp package do
+    [
+      maintainers: ["Jake Morrison"],
+      licenses: ["Apache 2.0"],
+      links: %{"GitHub" => @github}
+    ]
+  end
+
+  defp docs do
+    [
+      main: "readme",
+      extras: ["README.md", "CHANGELOG.md"],
+      source_url: @github,
+      skip_undefined_reference_warnings_on: ["CHANGELOG.md"]
     ]
   end
 end
