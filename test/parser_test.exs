@@ -65,12 +65,32 @@ defmodule ParserTest do
   end
 
   test "parameters" do
-    assert {:ok, {:integer, 1, [{"abc", {:boolean, true}}, {"b", {:boolean, false}}]}} == Parser.parse("1; abc; b=?0")
     assert {:ok, {:integer, 1, [{"a", {:boolean, true}}, {"b", {:boolean, false}}]}} == Parser.parse("1; a; b=?0")
+    # Longer name
+    assert {:ok, {:integer, 1, [{"abc", {:boolean, true}}, {"b", {:boolean, false}}]}} == Parser.parse("1; abc; b=?0")
+  end
+
+  test "inner list" do
+    # From RFC
+    assert {:ok, [
+      {:inner_list, [string: "foo", string: "bar"]},
+      {:inner_list, [string: "baz"]},
+      {:inner_list, [string: "bat", string: "one"]},
+      {:inner_list, []}
+    ]} == Parser.parse(~S<("foo" "bar"), ("baz"), ("bat" "one"), ()>)
+
+    assert {:ok, [
+      {:inner_list, [{:string, "foo", [{"a", {:integer, 1}}, {"b", {:integer, 2}}]}], [{"lvl", {:integer, 5}}]},
+      {:inner_list, [string: "bar", string: "baz"], [{"lvl", {:integer, 1}}]}
+    ]} == Parser.parse(~S<("foo"; a=1;b=2);lvl=5, ("bar" "baz");lvl=1>)
   end
 
   test "list" do
-    assert {:ok, {:list, [{:token, "foo"}, {:token, "bar"}]}} == Parser.parse("foo, bar")
+    # From RFC
+    assert {:ok, [{:token, "sugar"}, {:token, "tea"}, {:token, "rum"}]} == Parser.parse("sugar, tea, rum")
+    assert {:ok, [
+      {:token, "abc", [{"a", {:integer, 1}}, {"b", {:integer, 2}}, {"cde_456", {:boolean, true}}]},
+      {:inner_list, [{:token, "ghi", [{"jk", {:integer, 4}}]}, {:token, "l"}], [{"q", {:string, "9"}}, {"r", {:token, "w"}}]}
+    ]} == Parser.parse(~S<abc;a=1;b=2; cde_456, (ghi;jk=4 l);q="9";r=w>)
   end
-
 end

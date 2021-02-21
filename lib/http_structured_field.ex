@@ -30,7 +30,7 @@ defmodule HttpStructuredField do
       {:ok, {:integer, 1, [{"abc", {:boolean, true}}, {"b", {:boolean, false}}]}}
 
       iex> HttpStructuredField.parse("foo, bar")
-      {:ok, {:list, [{:token, "foo"}, {:token, "bar"}]}}
+      {:ok, [{:token, "foo"}, {:token, "bar"}]}
   """
   @spec parse(binary()) :: {:ok, term()} | {:error, term()}
   defdelegate parse(value), to: HttpStructuredField.Parser

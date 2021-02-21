@@ -4,8 +4,10 @@ defmodule HttpStructuredField.Parser do
   """
   import NimbleParsec
 
+
   # sf-integer = ["-"] 1*15DIGIT
 
+  # Convert charlist into integer
   defp process_integer(_rest, acc, context, _line, _offset) do
     case Integer.parse(to_string(Enum.reverse(acc))) do
       {value, ""} ->
@@ -25,8 +27,9 @@ defmodule HttpStructuredField.Parser do
     |> unwrap_and_tag(:integer)
 
 
-  # sf-decimal  = ["-"] 1*12DIGIT "." 1*3DIGIT
+  # sf-decimal = ["-"] 1*12DIGIT "." 1*3DIGIT
 
+  # Convert charlist into float
   defp process_decimal(_rest, acc, context, _line, _offset) do
     case Float.parse(to_string(Enum.reverse(acc))) do
       {value, ""} ->
@@ -62,6 +65,7 @@ defmodule HttpStructuredField.Parser do
   # unescaped = %x20-21 / %x23-5B / %x5D-7E
   # escaped   = "\" ( DQUOTE / "\" )
 
+  # Convert charlist to string
   defp process_string(_rest, acc, context, _line, _offset) do
     {[IO.iodata_to_binary(Enum.reverse(acc))], context}
   end
@@ -82,23 +86,23 @@ defmodule HttpStructuredField.Parser do
     |> unwrap_and_tag(:string)
 
   # sf-token = ( ALPHA / "*" ) *( tchar / ":" / "/" )
-  # tchar          = "!" / "#" / "$" / "%" / "&" / "'" / "*"
-  #              / "+" / "-" / "." / "^" / "_" / "`" / "|" / "~"
-  #              / DIGIT / ALPHA
-  #              ; any VCHAR, except delimiters
-  # VCHAR          =  %x21-7E ; visible (printing) characters
+  # tchar    = "!" / "#" / "$" / "%" / "&" / "'" / "*"
+  #             / "+" / "-" / "." / "^" / "_" / "`" / "|" / "~"
+  #             / DIGIT / ALPHA
+  #             ; any VCHAR, except delimiters
+  # VCHAR    =  %x21-7E ; visible (printing) characters
 
-  # ALPHA          =  %x41-5A / %x61-7A   ; A-Z / a-z
+  # ALPHA    =  %x41-5A / %x61-7A   ; A-Z / a-z
   alpha =
     ascii_char([0x41..0x5a, 0x61..0x7a]) |> label("ALPHA")
 
-  # DIGIT          =  %x30-39 ; 0-9
+  # DIGIT    =  %x30-39 ; 0-9
   digit =
     ascii_char([0x30..0x39]) |> label("DIGIT")
 
-  # tchar          = "!" / "#" / "$" / "%" / "&" / "'" / "*"
-  #              / "+" / "-" / "." / "^" / "_" / "`" / "|" / "~"
-  #              / DIGIT / ALPHA
+  # tchar    = "!" / "#" / "$" / "%" / "&" / "'" / "*"
+  #             / "+" / "-" / "." / "^" / "_" / "`" / "|" / "~"
+  #             / DIGIT / ALPHA
   tchar =
     choice([
       ascii_char([
@@ -122,8 +126,8 @@ defmodule HttpStructuredField.Parser do
   sf_token =
     choice([alpha, ascii_char([?*])])
     |> optional(repeat(choice([tchar, ascii_char([?:, ?/])])))
-    |> post_traverse(:process_string)
     |> label("token")
+    |> post_traverse(:process_string)
     |> unwrap_and_tag(:token)
 
   # sf-binary = ":" *(base64) ":"
@@ -141,6 +145,7 @@ defmodule HttpStructuredField.Parser do
     ])
     |> label("base64")
 
+  # Convert base64 to binary
   defp process_base64(_rest, acc, context, _line, _offset) do
     value =
       acc
@@ -166,8 +171,8 @@ defmodule HttpStructuredField.Parser do
 
 
   # sf-item   = bare-item parameters
-  # bare-item = sf-integer / sf-decimal / sf-string / sf-token
-  #              / sf-binary / sf-boolean
+  # bare-item = sf-integer / sf-decimal / sf-string / sf-token /
+  #             sf-binary / sf-boolean
   bare_item = choice([
     sf_token,
     sf_boolean,
@@ -212,7 +217,7 @@ defmodule HttpStructuredField.Parser do
   # Space
   sp =
     ascii_char([0x20])
-    |> label("sp")
+    |> label("SP")
 
   defp process_parameter(_rest, [value], context, _line, _offset) do
     {[{value, {:boolean, true}}], context}
@@ -230,17 +235,18 @@ defmodule HttpStructuredField.Parser do
     |> ignore(optional(repeat(sp)))
     |> concat(param_key)
     |> optional(
-      ignore(ascii_char([?=])) |> concat(param_value)
+      ignore(ascii_char([?=]))
+      |> concat(param_value)
     )
-    |> post_traverse(:process_parameter)
     |> label("parameter")
+    |> post_traverse(:process_parameter)
 
   parameters =
     repeat(parameter)
     |> label("parameters")
 
 
-  # If there are parameters, make a tuple like {tag, value, params}
+  # If there are parameters, make a 3-tuple like {tag, value, params}
   defp process_parameters(_rest, [_value] = acc, context, _line, _offset) do
     {acc, context}
   end
@@ -252,34 +258,61 @@ defmodule HttpStructuredField.Parser do
   sf_item =
     bare_item
     |> optional(parameters)
-    |> post_traverse(:process_parameters)
     |> label("sf-item")
+    |> post_traverse(:process_parameters)
 
-  # OWS            = *( SP / HTAB ) ; optional whitespace
-  # HTAB           =  %x09 ; horizontal tab
+  # OWS  = *( SP / HTAB ) ; optional whitespace
+  # HTAB =  %x09 ; horizontal tab
 
   ows =
     ascii_char([0x20, 0x09])
+    |> label("OWS")
 
-  defp process_list(_rest, [{:list, [value]}], context, _line, _offset) do
-    {[value], context}
-  end
-  defp process_list(_rest, acc, context, _line, _offset) do
-    {acc, context}
-  end
+  # inner-list = "(" *SP [ sf-item *( 1*SP sf-item ) *SP ] ")" parameters
+  # defp process_inner_list(_rest, [{:inner_list, [value]}], context, _line, _offset) do
+  #   {[value], context}
+  # end
+  # defp process_inner_list(_rest, acc, context, _line, _offset) do
+  #   {acc, context}
+  # end
+
+  inner_list =
+    ignore(ascii_char([?(]))
+    |> ignore(optional(repeat(sp)))
+    |> optional(sf_item)
+    |> optional(repeat(ignore(repeat(sp)) |> concat(sf_item)))
+    |> ignore(optional(repeat(sp)))
+    |> ignore(ascii_char([?)]))
+    |> label("inner-list")
+    |> tag(:inner_list)
+    |> optional(parameters)
+    |> post_traverse(:process_parameters)
+
+  list_member =
+    choice([sf_item, inner_list])
+
+  # defp process_list(_rest, [{:list, [value]}], context, _line, _offset) do
+  #   {[value], context}
+  # end
+  # defp process_list(_rest, acc, context, _line, _offset) do
+  #   {acc, context}
+  # end
 
   sf_list =
-    sf_item
-    |> repeat(
-      ignore(optional(ows))
-      |> ignore(ascii_char([?,]))
-      |> ignore(optional(ows))
-      |> concat(sf_item)
+    list_member
+    |> optional(
+      repeat(
+        ignore(optional(ows))
+        |> ignore(ascii_char([?,]))
+        |> ignore(optional(ows))
+        |> concat(list_member)
+      )
     )
-    |> tag(:list)
-    |> post_traverse(:process_list)
+    # |> tag(:list)
+    # |> post_traverse(:process_list)
 
   defparsec(:parsec_parse, sf_list)
+  defparsec(:parsec_inner, inner_list)
 
   @spec parse(binary()) ::
           {:ok, {:integer, integer()} | {:decimal, float()} | {:boolean, bool()}}
