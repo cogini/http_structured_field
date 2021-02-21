@@ -4,6 +4,7 @@ defmodule HttpStructuredField.Parser do
   """
   import NimbleParsec
 
+  @type item() :: {:integer, integer()} | {:decimal, float()} | {:boolean, bool()} | {:string, binary()} | {:token, binary()} | {:binary, binary()}
 
   # sf-integer = ["-"] 1*15DIGIT
 
@@ -195,7 +196,7 @@ defmodule HttpStructuredField.Parser do
     ascii_char([?a..?z])
     |> label("lcalpha")
 
-  param_key =
+  key =
     choice([lcalpha, ascii_char([?*])])
     |> optional(repeat(choice([
       lcalpha,
@@ -207,7 +208,7 @@ defmodule HttpStructuredField.Parser do
         0x2a, # *
       ])
     ])))
-    |> label("param-key")
+    |> label("key")
     |> post_traverse(:process_string)
 
   param_value =
@@ -233,7 +234,7 @@ defmodule HttpStructuredField.Parser do
   parameter =
     ignore(ascii_char([?;]))
     |> ignore(optional(repeat(sp)))
-    |> concat(param_key)
+    |> concat(key)
     |> optional(
       ignore(ascii_char([?=]))
       |> concat(param_value)
@@ -251,13 +252,17 @@ defmodule HttpStructuredField.Parser do
     {acc, context}
   end
   defp process_parameters(_rest, acc, context, _line, _offset) do
-    [{tag, value} | params] = Enum.reverse(acc)
-    {[{tag, value, params}], context}
+    case Enum.reverse(acc) do
+      [{tag, value}, {:parameters, []}] ->
+          {[{tag, value}], context}
+      [{tag, value}, {:parameters, params}] ->
+          {[{tag, value, params}], context}
+    end
   end
 
   sf_item =
     bare_item
-    |> optional(parameters)
+    |> optional(parameters |> tag(:parameters))
     |> label("sf-item")
     |> post_traverse(:process_parameters)
 
@@ -269,12 +274,6 @@ defmodule HttpStructuredField.Parser do
     |> label("OWS")
 
   # inner-list = "(" *SP [ sf-item *( 1*SP sf-item ) *SP ] ")" parameters
-  # defp process_inner_list(_rest, [{:inner_list, [value]}], context, _line, _offset) do
-  #   {[value], context}
-  # end
-  # defp process_inner_list(_rest, acc, context, _line, _offset) do
-  #   {acc, context}
-  # end
 
   inner_list =
     ignore(ascii_char([?(]))
@@ -285,18 +284,11 @@ defmodule HttpStructuredField.Parser do
     |> ignore(ascii_char([?)]))
     |> label("inner-list")
     |> tag(:inner_list)
-    |> optional(parameters)
+    |> optional(parameters |> tag(:parameters))
     |> post_traverse(:process_parameters)
 
   list_member =
     choice([sf_item, inner_list])
-
-  # defp process_list(_rest, [{:list, [value]}], context, _line, _offset) do
-  #   {[value], context}
-  # end
-  # defp process_list(_rest, acc, context, _line, _offset) do
-  #   {acc, context}
-  # end
 
   sf_list =
     list_member
@@ -308,17 +300,84 @@ defmodule HttpStructuredField.Parser do
         |> concat(list_member)
       )
     )
-    # |> tag(:list)
-    # |> post_traverse(:process_list)
 
-  defparsec(:parsec_parse, sf_list)
-  defparsec(:parsec_inner, inner_list)
+  # sf-dictionary  = dict-member *( OWS "," OWS dict-member )
+  # dict-member    = member-key ( parameters / ( "=" member-value ))
+  # member-key     = key
+  # member-value   = sf-item / inner-list
 
-  @spec parse(binary()) ::
-          {:ok, {:integer, integer()} | {:decimal, float()} | {:boolean, bool()}}
-          | {:error, term()}
-  def parse(input) do
-    case parsec_parse(input) do
+  # Simple boolean value
+  defp process_dict_member(_rest, [key], context, _line, _offset) do
+    {[{key, {:boolean, true}}], context}
+  end
+  defp process_dict_member(_rest, acc, context, _line, _offset) do
+    case Enum.reverse(acc) do
+      # key is simple boolean, but with parameters
+      [key, {:parameters, []}] ->
+        {[{key, {:boolean, true}}], context}
+
+      [key, {:parameters, params}] ->
+        {[{key, {:boolean, true}, params}], context}
+
+      #   {[{key, {:boolean, true, params}}], context}
+      # key = inner-list
+      [key, {:inner_list, value}] ->
+        {[{key, value}], context}
+
+      # key = inner-list, where inner-list has params
+      [key, {:inner_list, value, params}] ->
+        {[{key, value, params}], context}
+
+      # key = item value
+      [key, {tag, _value} = item] when is_atom(tag) ->
+        {[{key, item}], context}
+      # key = item value, where item has params
+      [key, {tag, _value, _params} = item] when is_atom(tag) ->
+        {[{key, item}], context}
+
+    end
+  end
+
+  member_value =
+    choice([sf_item, inner_list |> unwrap_and_tag(:inner_list)])
+    |> label("member-value")
+
+  dict_member =
+    key
+    |> choice([
+      ignore(ascii_char([?=])) |> concat(member_value),
+      parameters |> tag(:parameters)
+    ])
+    |> post_traverse(:process_dict_member)
+    # |> tag(:dict_member)
+
+  sf_dictionary =
+    dict_member
+    |> optional(
+      repeat(
+        ignore(optional(ows))
+        |> ignore(ascii_char([?,]))
+        |> ignore(optional(ows))
+        |> concat(dict_member)
+      )
+    )
+
+  defparsec(:parsec_parse_list, sf_list)
+  defparsec(:parsec_parse_dict, sf_dictionary)
+
+  @spec parse(binary(), Keyword.t()) :: {:ok, item() | list()} | {:error, term()}
+  def parse(input, opts \\ []) do
+    type = opts[:type] || :list
+
+    result =
+      case type do
+        :list ->
+          parsec_parse_list(input)
+        :dict ->
+          parsec_parse_dict(input)
+      end
+
+   case result do
       {:ok, [value], _, _, _, _} ->
         {:ok, value}
 

@@ -4,9 +4,6 @@ HTTP headers often need to carry complex structures such as lists of values.
 [RFC 8941](https://tools.ietf.org/html/rfc8941) specifies a standard format
 for these fields independent of the RFCs that define the headers.
 
-This is a work in progress. It currently knows how to parse "items" (including
-parmeters), and lists of items.
-
 ## Usage
 
 ```elixir
@@ -33,6 +30,14 @@ iex> HttpStructuredField.parse("1; abc; b=?0")
 
 iex> HttpStructuredField.parse("foo, bar")
 {:ok, [{:token, "foo"}, {:token, "bar"}]}
+
+iex> HttpStructuredField.parse("a=(1 2), b=3, c=4;aa=bb, d=(5 6);valid", type: :dict)
+{:ok, [
+  {"a", {:inner_list, [integer: 1, integer: 2]}},
+  {"b", {:integer, 3}},
+  {"c", {:integer, 4, [{"aa", {:token, "bb"}}]}},
+  {"d", {:inner_list, [integer: 5, integer: 6], [{"valid", {:boolean, true}}]}}
+]}
 ```
 
 ## Installation

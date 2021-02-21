@@ -31,7 +31,15 @@ defmodule HttpStructuredField do
 
       iex> HttpStructuredField.parse("foo, bar")
       {:ok, [{:token, "foo"}, {:token, "bar"}]}
+
+      iex> HttpStructuredField.parse("a=(1 2), b=3, c=4;aa=bb, d=(5 6);valid", type: :dict)
+      {:ok, [
+        {"a", {:inner_list, [integer: 1, integer: 2]}},
+        {"b", {:integer, 3}},
+        {"c", {:integer, 4, [{"aa", {:token, "bb"}}]}},
+        {"d", {:inner_list, [integer: 5, integer: 6], [{"valid", {:boolean, true}}]}}
+      ]}
   """
   @spec parse(binary()) :: {:ok, term()} | {:error, term()}
-  defdelegate parse(value), to: HttpStructuredField.Parser
+  defdelegate parse(value, opts \\ []), to: HttpStructuredField.Parser
 end
