@@ -4,7 +4,9 @@ defmodule HttpStructuredField do
   """
 
   @doc """
-  Parse field data.
+  Parse Structured Field datadata.
+
+  By default, expects a list
 
   ## Examples
 

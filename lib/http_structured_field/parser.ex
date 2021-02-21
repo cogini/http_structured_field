@@ -365,8 +365,17 @@ defmodule HttpStructuredField.Parser do
   defparsec(:parsec_parse_list, sf_list)
   defparsec(:parsec_parse_dict, sf_dictionary)
 
+  @doc """
+  Parse Structured Field.
+
+  Lists and Dictionaries are incompatible.
+  The default is to parse with lists as the top level. To parse dictionaries,
+  set the option `type: :dict`.
+  """
   @spec parse(binary(), Keyword.t()) :: {:ok, item() | list()} | {:error, term()}
-  def parse(input, opts \\ []) do
+  def parse(input, opts \\ [])
+  def parse("", _opts), do: {:ok, []}
+  def parse(input, opts) do
     type = opts[:type] || :list
 
     result =

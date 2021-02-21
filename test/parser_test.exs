@@ -83,6 +83,8 @@ defmodule ParserTest do
       {:inner_list, [{:string, "foo", [{"a", {:integer, 1}}, {"b", {:integer, 2}}]}], [{"lvl", {:integer, 5}}]},
       {:inner_list, [string: "bar", string: "baz"], [{"lvl", {:integer, 1}}]}
     ]} == Parser.parse(~S<("foo"; a=1;b=2);lvl=5, ("bar" "baz");lvl=1>)
+
+    assert {:ok, {:inner_list, []}} == Parser.parse(~S<()>)
   end
 
   test "list" do
@@ -124,6 +126,10 @@ defmodule ParserTest do
       {"c", {:integer, 4, [{"aa", {:token, "bb"}}]}},
       {"d", {:inner_list, [integer: 5, integer: 6], [{"valid", {:boolean, true}}]}}
     ]} == Parser.parse(~S<a=(1 2), b=3, c=4;aa=bb, d=(5 6);valid>, type: :dict)
+  end
+
+  test "empty input" do
+    assert {:ok, []} == Parser.parse("")
   end
 
 end
