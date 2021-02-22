@@ -1,4 +1,4 @@
-defmodule SecChUaTestt do
+defmodule SecChUaTest do
   @moduledoc """
   https://wicg.github.io/ua-client-hints/
   """
