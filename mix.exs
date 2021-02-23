@@ -26,7 +26,7 @@ defmodule HttpStructuredField.MixProject do
         "coveralls.detail": :test,
         "coveralls.post": :test,
         "coveralls.html": :test
-      ],
+      ]
       # xref: [
       #   exclude: [EEx, :cover]
       # ]
@@ -35,12 +35,12 @@ defmodule HttpStructuredField.MixProject do
 
   def application do
     [
-      extra_applications: [:logger] ++ extra_applications(Mix.env()),
+      extra_applications: [:logger] ++ extra_applications(Mix.env())
     ]
   end
 
   defp extra_applications(env) when env in [:dev, :test], do: [:eex]
-  defp extra_applications(_),     do: []
+  defp extra_applications(_), do: []
 
   defp deps do
     [

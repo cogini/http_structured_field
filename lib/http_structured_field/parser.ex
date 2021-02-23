@@ -4,7 +4,13 @@ defmodule HttpStructuredField.Parser do
   """
   import NimbleParsec
 
-  @type item() :: {:integer, integer()} | {:decimal, float()} | {:boolean, bool()} | {:string, binary()} | {:token, binary()} | {:binary, binary()}
+  @type item() ::
+          {:integer, integer()}
+          | {:decimal, float()}
+          | {:boolean, bool()}
+          | {:string, binary()}
+          | {:token, binary()}
+          | {:binary, binary()}
 
   # sf-integer = ["-"] 1*15DIGIT
 
@@ -26,7 +32,6 @@ defmodule HttpStructuredField.Parser do
     # |> concat(basic_integer) |> label("integer")
     |> post_traverse(:process_integer)
     |> unwrap_and_tag(:integer)
-
 
   # sf-decimal = ["-"] 1*12DIGIT "." 1*3DIGIT
 
@@ -50,7 +55,6 @@ defmodule HttpStructuredField.Parser do
     |> post_traverse(:process_decimal)
     |> unwrap_and_tag(:decimal)
 
-
   sf_boolean =
     ignore(ascii_char([63])) # ?
     |> choice([
@@ -59,7 +63,6 @@ defmodule HttpStructuredField.Parser do
     ])
     |> label("boolean")
     |> unwrap_and_tag(:boolean)
-
 
   # sf-string = DQUOTE *chr DQUOTE
   # chr       = unescaped / escaped
@@ -77,8 +80,9 @@ defmodule HttpStructuredField.Parser do
       lookahead_not(ascii_char([?"]))
       |> choice([
         ~S(\") |> string() |> replace(?"),
-        ~S(\\) |> string() |> replace(0x5c),
-        utf8_string([0x20..0x21, 0x23..0x5b, 0x5d..0x7e], min: 1) # Printable ASCII
+        ~S(\\) |> string() |> replace(0x5C),
+        # Printable ASCII
+        utf8_string([0x20..0x21, 0x23..0x5B, 0x5D..0x7E], min: 1)
       ])
     )
     |> ignore(ascii_char([?"]))
@@ -94,12 +98,10 @@ defmodule HttpStructuredField.Parser do
   # VCHAR    =  %x21-7E ; visible (printing) characters
 
   # ALPHA    =  %x41-5A / %x61-7A   ; A-Z / a-z
-  alpha =
-    ascii_char([0x41..0x5a, 0x61..0x7a]) |> label("ALPHA")
+  alpha = ascii_char([0x41..0x5A, 0x61..0x7A]) |> label("ALPHA")
 
   # DIGIT    =  %x30-39 ; 0-9
-  digit =
-    ascii_char([0x30..0x39]) |> label("DIGIT")
+  digit = ascii_char([0x30..0x39]) |> label("DIGIT")
 
   # tchar    = "!" / "#" / "$" / "%" / "&" / "'" / "*"
   #             / "+" / "-" / "." / "^" / "_" / "`" / "|" / "~"
@@ -109,20 +111,37 @@ defmodule HttpStructuredField.Parser do
       ascii_char([
         ?!,
         ?#,
-        0x24, # $
-        0x25, # %,
-        0x26, # &
-        0x27, # '
-        0x2a, # *
-        0x2b, # +
-        0x2d, # -
-        0x2e, # .
-        0x5e, # ^
-        0x5f, # _
-        0x60, # `
-        0x7c, # |
-        0x7e, # ~
-      ]), digit, alpha]) |> label("tchar")
+        # $
+        0x24,
+        # %,
+        0x25,
+        # &
+        0x26,
+        # '
+        0x27,
+        # *
+        0x2A,
+        # +
+        0x2B,
+        # -
+        0x2D,
+        # .
+        0x2E,
+        # ^
+        0x5E,
+        # _
+        0x5F,
+        # `
+        0x60,
+        # |
+        0x7C,
+        # ~
+        0x7E
+      ]),
+      digit,
+      alpha
+    ])
+    |> label("tchar")
 
   sf_token =
     choice([alpha, ascii_char([?*])])
@@ -139,7 +158,8 @@ defmodule HttpStructuredField.Parser do
       alpha,
       digit,
       ascii_char([
-        0x2b, # +
+        # +
+        0x2B,
         ?/,
         ?=
       ])
@@ -170,19 +190,19 @@ defmodule HttpStructuredField.Parser do
     |> post_traverse(:process_base64)
     |> unwrap_and_tag(:binary)
 
-
   # sf-item   = bare-item parameters
   # bare-item = sf-integer / sf-decimal / sf-string / sf-token /
   #             sf-binary / sf-boolean
-  bare_item = choice([
-    sf_token,
-    sf_boolean,
-    sf_binary,
-    sf_string,
-    sf_decimal,
-    sf_integer
-  ])
-  |> label("bare-item")
+  bare_item =
+    choice([
+      sf_token,
+      sf_boolean,
+      sf_binary,
+      sf_string,
+      sf_decimal,
+      sf_integer
+    ])
+    |> label("bare-item")
 
   # parameters    = *( ";" *SP parameter )
   # parameter     = param-key [ "=" param-value ]
@@ -198,16 +218,24 @@ defmodule HttpStructuredField.Parser do
 
   key =
     choice([lcalpha, ascii_char([?*])])
-    |> optional(repeat(choice([
-      lcalpha,
-      digit,
-      ascii_char([
-        0x5f, # _
-        0x2d, # -
-        0x2e, # .
-        0x2a, # *
-      ])
-    ])))
+    |> optional(
+      repeat(
+        choice([
+          lcalpha,
+          digit,
+          ascii_char([
+            # _
+            0x5F,
+            # -
+            0x2D,
+            # .
+            0x2E,
+            # *
+            0x2A
+          ])
+        ])
+      )
+    )
     |> label("key")
     |> post_traverse(:process_string)
 
@@ -223,11 +251,13 @@ defmodule HttpStructuredField.Parser do
   defp process_parameter(_rest, [value], context, _line, _offset) do
     {[{value, {:boolean, true}}], context}
   end
+
   defp process_parameter(_rest, acc, context, _line, _offset) do
     value =
       acc
       |> Enum.reverse()
       |> List.to_tuple()
+
     {[value], context}
   end
 
@@ -246,17 +276,18 @@ defmodule HttpStructuredField.Parser do
     repeat(parameter)
     |> label("parameters")
 
-
   # If there are parameters, make a 3-tuple like {tag, value, params}
   defp process_parameters(_rest, [_value] = acc, context, _line, _offset) do
     {acc, context}
   end
+
   defp process_parameters(_rest, acc, context, _line, _offset) do
     case Enum.reverse(acc) do
       [{tag, value}, {:parameters, []}] ->
-          {[{tag, value}], context}
+        {[{tag, value}], context}
+
       [{tag, value}, {:parameters, params}] ->
-          {[{tag, value, params}], context}
+        {[{tag, value, params}], context}
     end
   end
 
@@ -287,8 +318,7 @@ defmodule HttpStructuredField.Parser do
     |> optional(parameters |> tag(:parameters))
     |> post_traverse(:process_parameters)
 
-  list_member =
-    choice([sf_item, inner_list])
+  list_member = choice([sf_item, inner_list])
 
   sf_list =
     list_member
@@ -310,6 +340,7 @@ defmodule HttpStructuredField.Parser do
   defp process_dict_member(_rest, [key], context, _line, _offset) do
     {[{key, {:boolean, true}}], context}
   end
+
   defp process_dict_member(_rest, acc, context, _line, _offset) do
     case Enum.reverse(acc) do
       # key is simple boolean, but with parameters
@@ -331,10 +362,10 @@ defmodule HttpStructuredField.Parser do
       # key = item value
       [key, {tag, _value} = item] when is_atom(tag) ->
         {[{key, item}], context}
+
       # key = item value, where item has params
       [key, {tag, _value, _params} = item] when is_atom(tag) ->
         {[{key, item}], context}
-
     end
   end
 
@@ -349,7 +380,6 @@ defmodule HttpStructuredField.Parser do
       parameters |> tag(:parameters)
     ])
     |> post_traverse(:process_dict_member)
-    # |> tag(:dict_member)
 
   sf_dictionary =
     dict_member
@@ -375,6 +405,7 @@ defmodule HttpStructuredField.Parser do
   @spec parse(binary(), Keyword.t()) :: {:ok, item() | list()} | {:error, term()}
   def parse(input, opts \\ [])
   def parse("", _opts), do: {:ok, []}
+
   def parse(input, opts) do
     type = opts[:type] || :list
 
@@ -382,11 +413,12 @@ defmodule HttpStructuredField.Parser do
       case type do
         :list ->
           parsec_parse_list(input)
+
         :dict ->
           parsec_parse_dict(input)
       end
 
-   case result do
+    case result do
       {:ok, [value], _, _, _, _} ->
         {:ok, value}
 
