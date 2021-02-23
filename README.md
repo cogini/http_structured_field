@@ -40,6 +40,18 @@ iex> HttpStructuredField.parse("a=(1 2), b=3, c=4;aa=bb, d=(5 6);valid", type: :
 ]}
 ```
 
+The parser uses [NimbleParsec](https://hex.pm/packages/nimble_parsec), so it's
+strict.
+
+It handles the funky syntax of parameters, nested lists, and dictionaries. You can
+run it on any input and it will return a tagged tuple for a simple value
+or an Elixir list for a list of values. If there are parameters, then the tuple
+will have three elements, with the third being a list. Inner List types are
+tagged tuples, as we need some place to put the parameters.
+
+Dictionary types are unfortunately incompatible with lists, so you have to tell
+the parser what to expect by adding the `type: :dict` option.
+
 ## Installation
 
 If [available in Hex](https://hex.pm/docs/publish), the package can be installed
