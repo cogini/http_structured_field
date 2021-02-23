@@ -53,7 +53,7 @@ defmodule HttpStructuredField.MixProject do
   end
 
   defp description do
-    "Mix task to generate Ecto migrations from SQL schema file"
+    "Library to parse and generate RFC 8941 Structured Field Values for HTTP"
   end
 
   defp package do

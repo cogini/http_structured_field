@@ -390,9 +390,13 @@ defmodule HttpStructuredField.Parser do
   @doc """
   Parse Structured Field.
 
-  Lists and Dictionaries are incompatible.
-  The default is to parse with lists as the top level. To parse dictionaries,
-  set the option `type: :dict`.
+  By default, assumes that input is a single Item or a List.
+  For Dictionaries, set the `type: :dict` option.
+
+  Returns a tagged tuple with the result or an error if parsing failed.  If the
+  item has paramerters, then the tuple also contains a list of parameters.
+  Parmeters and dictionary members are represented as lists of tuples where the
+  name is the first tuple element.
   """
   @spec parse(binary(), Keyword.t()) :: {:ok, HttpStructuredField.item() | list()} | {:error, term()}
   def parse(input, opts \\ [])
