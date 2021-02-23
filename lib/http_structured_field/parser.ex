@@ -4,14 +4,6 @@ defmodule HttpStructuredField.Parser do
   """
   import NimbleParsec
 
-  @type item() ::
-          {:integer, integer()}
-          | {:decimal, float()}
-          | {:boolean, bool()}
-          | {:string, binary()}
-          | {:token, binary()}
-          | {:binary, binary()}
-
   # sf-integer = ["-"] 1*15DIGIT
 
   # Convert charlist into integer
@@ -402,7 +394,7 @@ defmodule HttpStructuredField.Parser do
   The default is to parse with lists as the top level. To parse dictionaries,
   set the option `type: :dict`.
   """
-  @spec parse(binary(), Keyword.t()) :: {:ok, item() | list()} | {:error, term()}
+  @spec parse(binary(), Keyword.t()) :: {:ok, HttpStructuredField.item() | list()} | {:error, term()}
   def parse(input, opts \\ [])
   def parse("", _opts), do: {:ok, []}
 

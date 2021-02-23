@@ -3,6 +3,13 @@ defmodule HttpStructuredField do
   Top level API to parse and serialize data.
   """
 
+  @type item() :: {:integer, integer()} | {:decimal, float(), []}
+  | {:boolean, bool()} | {:boolean, bool(), []}
+  | {:string, binary()} | {:string, binary(), []}
+  | {:token, binary()} | {:token, binary(), []}
+  | {:binary, binary()} | {:binary, binary(), []}
+  | list()
+
   @doc """
   Parse Structured Field datadata.
 
@@ -42,6 +49,6 @@ defmodule HttpStructuredField do
         {"d", {:inner_list, [integer: 5, integer: 6], [{"valid", {:boolean, true}}]}}
       ]}
   """
-  @spec parse(binary()) :: {:ok, term()} | {:error, term()}
+  @spec parse(binary(), Keyword.t()) :: {:ok, item()} | {:error, term()}
   defdelegate parse(value, opts \\ []), to: HttpStructuredField.Parser
 end

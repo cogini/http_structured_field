@@ -49,6 +49,9 @@ or an Elixir list for a list of values. If there are parameters, then the tuple
 will have three elements, with the third being a list. Inner List types are
 tagged tuples, as we need some place to put the parameters.
 
+Parmeters and dictionary members are represented as lists of tuples where the
+name is the first tuple element.
+
 Dictionary types are unfortunately incompatible with lists, so you have to tell
 the parser what to expect by adding the `type: :dict` option.
 
