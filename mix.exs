@@ -53,7 +53,7 @@ defmodule HttpStructuredField.MixProject do
   end
 
   defp description do
-    "Library to parse and generate RFC 8941 Structured Field Values for HTTP"
+    "Library to parse RFC 8941 Structured Field Values for HTTP"
   end
 
   defp package do
