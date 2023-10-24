@@ -1,8 +1,23 @@
+# http_structured_field
+
 Elixir library to parse and generate RFC 8941 Structured Field Values for HTTP.
 
 HTTP headers often need to carry complex structures such as lists of values.
 [RFC 8941](https://tools.ietf.org/html/rfc8941) specifies a standard format
 for these fields independent of the RFCs that define the headers.
+
+Following are some headers that use the format:
+
+* Permissions-Policy
+* Document-Policy
+* Reporting-Endpoints
+* BFCache-Opt-In
+* Accept-CH
+* Critical-CH
+* Supports-Loading-Mode
+* Signed-Headers
+* Sec-Redemption-Record
+* Sec-Signature
 
 ## Usage
 
@@ -41,11 +56,11 @@ iex> HttpStructuredField.parse("a=(1 2), b=3, c=4;aa=bb, d=(5 6);valid", type: :
 ```
 
 The parser uses [NimbleParsec](https://hex.pm/packages/nimble_parsec), so it's
-strict.
+strict, unlike, e.g., regular expressions.
 
-It handles the funky syntax of parameters, nested lists, and dictionaries. You can
-run it on any input and it will return a tagged tuple for a simple value
-or an Elixir list for a list of values. If there are parameters, then the tuple
+It handles the funky syntax of parameters, nested lists, and dictionaries. You
+can run it on any input and it will return a tagged tuple for a simple value or
+an Elixir list for a list of values. If there are parameters, then the tuple
 will have three elements, with the third being a list. Inner List types are
 tagged tuples, as we need some place to put the parameters.
 
@@ -68,6 +83,4 @@ def deps do
 end
 ```
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/http_structured_field](https://hexdocs.pm/http_structured_field).
+The docs can be found at [https://hexdocs.pm/http_structured_field](https://hexdocs.pm/http_structured_field).
