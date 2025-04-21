@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Update test deps
 - Update to nimble_parsec 1.4.2
+- Update post_traverse return value for latest NimbleParsec
 
 ## [0.1.1] - 2021-02-23
 ### Added
