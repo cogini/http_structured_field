@@ -26,5 +26,8 @@ http_structured_field-*.tar
 # Temporary files for e.g. tests
 /tmp
 
+# Editor files
+.lexical
+
 # macOS junk
 .DS_Store
