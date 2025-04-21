@@ -3,12 +3,18 @@ defmodule HttpStructuredField do
   Top level API to parse and serialize data.
   """
 
-  @type item() :: {:integer, integer()} | {:decimal, float(), []}
-  | {:boolean, bool()} | {:boolean, bool(), []}
-  | {:string, binary()} | {:string, binary(), []}
-  | {:token, binary()} | {:token, binary(), []}
-  | {:binary, binary()} | {:binary, binary(), []}
-  | list()
+  @type item() ::
+          {:integer, integer()}
+          | {:decimal, float(), []}
+          | {:boolean, bool()}
+          | {:boolean, bool(), []}
+          | {:string, binary()}
+          | {:string, binary(), []}
+          | {:token, binary()}
+          | {:token, binary(), []}
+          | {:binary, binary()}
+          | {:binary, binary(), []}
+          | list()
 
   @doc """
   Parse Structured Field datadata.

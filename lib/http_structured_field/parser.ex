@@ -48,7 +48,8 @@ defmodule HttpStructuredField.Parser do
     |> unwrap_and_tag(:decimal)
 
   sf_boolean =
-    ignore(ascii_char([63])) # ?
+    # ?
+    ignore(ascii_char([63]))
     |> choice([
       ascii_char([?0]) |> replace(false),
       ascii_char([?1]) |> replace(true)
@@ -398,7 +399,8 @@ defmodule HttpStructuredField.Parser do
   Parmeters and dictionary members are represented as lists of tuples where the
   name is the first tuple element.
   """
-  @spec parse(binary(), Keyword.t()) :: {:ok, HttpStructuredField.item() | list()} | {:error, term()}
+  @spec parse(binary(), Keyword.t()) ::
+          {:ok, HttpStructuredField.item() | list()} | {:error, term()}
   def parse(input, opts \\ [])
   def parse("", _opts), do: {:ok, []}
 

@@ -12,7 +12,7 @@ defmodule HttpStructuredField.MixProject do
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
       dialyzer: [
-        plt_add_apps: [:mix, :eex, :ex_unit],
+        plt_add_apps: [:mix, :eex, :ex_unit]
         # plt_add_deps: true,
         # flags: ["-Werror_handling", "-Wrace_conditions"],
         # flags: ["-Wunmatched_returns", :error_handling, :race_conditions, :underspecs],
@@ -70,7 +70,8 @@ defmodule HttpStructuredField.MixProject do
       licenses: ["Apache-2.0"],
       links: %{
         "GitHub" => @github,
-        "Changelog" => "#{@github}/blob/#{@version}/CHANGELOG.md##{String.replace(@version, ".", "")}"
+        "Changelog" =>
+          "#{@github}/blob/#{@version}/CHANGELOG.md##{String.replace(@version, ".", "")}"
       }
     ]
   end
