@@ -72,8 +72,7 @@ the parser what to expect by adding the `type: :dict` option.
 
 ## Installation
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `http_structured_field` to your list of dependencies in `mix.exs`:
+Add `http_structured_field` to your list of dependencies in `mix.exs`:
 
 ```elixir
 def deps do
