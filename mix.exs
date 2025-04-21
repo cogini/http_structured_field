@@ -45,8 +45,8 @@ defmodule HttpStructuredField.MixProject do
   defp deps do
     [
       {:credo, "~> 1.5", only: [:dev, :test], runtime: false},
-      {:excoveralls, "~> 0.14.0", only: [:dev, :test], runtime: false},
-      {:dialyxir, "~> 0.5.1", only: [:dev, :test], runtime: false},
+      {:excoveralls, "~> 0.18.0", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.4.0", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.23", only: :dev, runtime: false},
       {:nimble_parsec, "~> 1.1"}
     ]
