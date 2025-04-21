@@ -7,10 +7,10 @@ defmodule HttpStructuredField.Parser do
   # sf-integer = ["-"] 1*15DIGIT
 
   # Convert charlist into integer
-  defp process_integer(_rest, acc, context, _line, _offset) do
+  defp process_integer(rest, acc, context, _line, _offset) do
     case Integer.parse(to_string(Enum.reverse(acc))) do
       {value, ""} ->
-        {[value], context}
+        {rest, [value], context}
 
       :error ->
         {:error, "Invalid integer"}
@@ -28,10 +28,10 @@ defmodule HttpStructuredField.Parser do
   # sf-decimal = ["-"] 1*12DIGIT "." 1*3DIGIT
 
   # Convert charlist into float
-  defp process_decimal(_rest, acc, context, _line, _offset) do
+  defp process_decimal(rest, acc, context, _line, _offset) do
     case Float.parse(to_string(Enum.reverse(acc))) do
       {value, ""} ->
-        {[value], context}
+        {rest, [value], context}
 
       :error ->
         {:error, "Invalid decimal"}
@@ -63,8 +63,8 @@ defmodule HttpStructuredField.Parser do
   # escaped   = "\" ( DQUOTE / "\" )
 
   # Convert charlist to string
-  defp process_string(_rest, acc, context, _line, _offset) do
-    {[IO.iodata_to_binary(Enum.reverse(acc))], context}
+  defp process_string(rest, acc, context, _line, _offset) do
+    {rest, [IO.iodata_to_binary(Enum.reverse(acc))], context}
   end
 
   sf_string =
@@ -160,7 +160,7 @@ defmodule HttpStructuredField.Parser do
     |> label("base64")
 
   # Convert base64 to binary
-  defp process_base64(_rest, acc, context, _line, _offset) do
+  defp process_base64(rest, acc, context, _line, _offset) do
     value =
       acc
       |> Enum.reverse()
@@ -168,7 +168,7 @@ defmodule HttpStructuredField.Parser do
 
     case Base.decode64(value) do
       {:ok, binary} ->
-        {[binary], context}
+        {rest, [binary], context}
 
       :error ->
         {:error, "Invalid base64"}
@@ -241,17 +241,17 @@ defmodule HttpStructuredField.Parser do
     ascii_char([0x20])
     |> label("SP")
 
-  defp process_parameter(_rest, [value], context, _line, _offset) do
-    {[{value, {:boolean, true}}], context}
+  defp process_parameter(rest, [value], context, _line, _offset) do
+    {rest, [{value, {:boolean, true}}], context}
   end
 
-  defp process_parameter(_rest, acc, context, _line, _offset) do
+  defp process_parameter(rest, acc, context, _line, _offset) do
     value =
       acc
       |> Enum.reverse()
       |> List.to_tuple()
 
-    {[value], context}
+    {rest, [value], context}
   end
 
   parameter =
@@ -270,17 +270,17 @@ defmodule HttpStructuredField.Parser do
     |> label("parameters")
 
   # If there are parameters, make a 3-tuple like {tag, value, params}
-  defp process_parameters(_rest, [_value] = acc, context, _line, _offset) do
-    {acc, context}
+  defp process_parameters(rest, [_value] = acc, context, _line, _offset) do
+    {rest, acc, context}
   end
 
-  defp process_parameters(_rest, acc, context, _line, _offset) do
+  defp process_parameters(rest, acc, context, _line, _offset) do
     case Enum.reverse(acc) do
       [{tag, value}, {:parameters, []}] ->
-        {[{tag, value}], context}
+        {rest, [{tag, value}], context}
 
       [{tag, value}, {:parameters, params}] ->
-        {[{tag, value, params}], context}
+        {rest, [{tag, value, params}], context}
     end
   end
 
@@ -330,35 +330,35 @@ defmodule HttpStructuredField.Parser do
   # member-value   = sf-item / inner-list
 
   # Simple boolean value
-  defp process_dict_member(_rest, [key], context, _line, _offset) do
-    {[{key, {:boolean, true}}], context}
+  defp process_dict_member(rest, [key], context, _line, _offset) do
+    {rest, [{key, {:boolean, true}}], context}
   end
 
-  defp process_dict_member(_rest, acc, context, _line, _offset) do
+  defp process_dict_member(rest, acc, context, _line, _offset) do
     case Enum.reverse(acc) do
       # key is simple boolean, but with parameters
       [key, {:parameters, []}] ->
-        {[{key, {:boolean, true}}], context}
+        {rest, [{key, {:boolean, true}}], context}
 
       [key, {:parameters, params}] ->
-        {[{key, {:boolean, true}, params}], context}
+        {rest, [{key, {:boolean, true}, params}], context}
 
       #   {[{key, {:boolean, true, params}}], context}
       # key = inner-list
       [key, {:inner_list, value}] ->
-        {[{key, value}], context}
+        {rest, [{key, value}], context}
 
       # key = inner-list, where inner-list has params
       [key, {:inner_list, value, params}] ->
-        {[{key, value, params}], context}
+        {rest, [{key, value, params}], context}
 
       # key = item value
       [key, {tag, _value} = item] when is_atom(tag) ->
-        {[{key, item}], context}
+        {rest, [{key, item}], context}
 
       # key = item value, where item has params
       [key, {tag, _value, _params} = item] when is_atom(tag) ->
-        {[{key, item}], context}
+        {rest, [{key, item}], context}
     end
   end
 
