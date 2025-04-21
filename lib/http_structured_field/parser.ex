@@ -47,8 +47,8 @@ defmodule HttpStructuredField.Parser do
     |> post_traverse(:process_decimal)
     |> unwrap_and_tag(:decimal)
 
+  # ascii 63 = ?
   sf_boolean =
-    # ?
     ignore(ascii_char([63]))
     |> choice([
       ascii_char([?0]) |> replace(false),
