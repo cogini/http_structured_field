@@ -1,3 +1,11 @@
+![test workflow](https://github.com/cogini/http_structured_field/actions/workflows/test.yml/badge.svg)
+[![Module Version](https://img.shields.io/hexpm/v/http_structured_field.svg)](https://hex.pm/packages/http_structured_field)
+[![Hex Docs](https://img.shields.io/badge/hex-docs-lightgreen.svg)](https://hexdocs.pm/http_structured_field)
+[![Total Download](https://img.shields.io/hexpm/dt/http_structured_field.svg)](https://hex.pm/packages/http_structured_field)
+[![License](https://img.shields.io/hexpm/l/http_structured_field.svg)](https://github.com/cogini/http_structured_field/blob/master/LICENSE.md)
+[![Last Updated](https://img.shields.io/github/last-commit/http_structured_field/http_structured_field.svg)](https://github.com/cogini/http_structured_field/commits/master)
+[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md)
+
 # http_structured_field
 
 Elixir library to parse and generate RFC 8941 Structured Field Values for HTTP.
@@ -83,3 +91,10 @@ end
 ```
 
 The docs can be found at [https://hexdocs.pm/http_structured_field](https://hexdocs.pm/http_structured_field).
+
+This project uses the Contributor Covenant version 2.1. Check [CODE_OF_CONDUCT.md](/CODE_OF_CONDUCT.md) for more information.
+
+# Contacts
+
+I am `jakemorrison` on on the Elixir Slack and Discord, `reachfh` on Freenode
+`#elixir-lang` IRC channel. Happy to chat or help with your projects.
