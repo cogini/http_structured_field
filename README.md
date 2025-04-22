@@ -3,7 +3,7 @@
 [![Hex Docs](https://img.shields.io/badge/hex-docs-lightgreen.svg)](https://hexdocs.pm/http_structured_field)
 [![Total Download](https://img.shields.io/hexpm/dt/http_structured_field.svg)](https://hex.pm/packages/http_structured_field)
 [![License](https://img.shields.io/hexpm/l/http_structured_field.svg)](https://github.com/cogini/http_structured_field/blob/master/LICENSE.md)
-[![Last Updated](https://img.shields.io/github/last-commit/http_structured_field/http_structured_field.svg)](https://github.com/cogini/http_structured_field/commits/main)
+[![Last Updated](https://img.shields.io/github/last-commit/cogini/http_structured_field/main)](https://github.com/cogini/http_structured_field/commits/main)
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md)
 
 # http_structured_field
