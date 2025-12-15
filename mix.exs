@@ -50,12 +50,12 @@ defmodule HttpStructuredField.MixProject do
     [
       {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4.0", only: [:dev, :test], runtime: false},
-      {:ex_doc, "~> 0.37.0", only: :dev, runtime: false},
+      {:ex_doc, "~> 0.39.0", only: :dev, runtime: false},
       {:excoveralls, "~> 0.18.0", only: [:dev, :test], runtime: false},
       {:junit_formatter, "~> 3.3", only: [:dev, :test], runtime: false},
       {:mix_audit, "~> 2.0", only: [:dev, :test], runtime: false},
       {:nimble_parsec, "~> 1.1"},
-      {:styler, "~> 0.10.0", only: [:dev, :test], runtime: false}
+      {:styler, "~> 1.10.0", only: [:dev, :test], runtime: false}
     ]
   end
 
