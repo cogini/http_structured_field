@@ -20,11 +20,13 @@ jobs:
         # https://hexdocs.pm/elixir/compatibility-and-deprecations.html
         exclude:
           - otp: '24'
+            elixir: '1.19.4'
+          - otp: '24'
             elixir: '1.18.4'
           - otp: '24'
             elixir: '1.17.3'
-          - otp: '26'
-            elixir: '1.13.4'
+          - otp: '25'
+            elixir: '1.19.4'
           - otp: '26'
             elixir: '1.14.5'
           - otp: '27'
