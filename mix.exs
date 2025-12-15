@@ -2,7 +2,7 @@ defmodule HttpStructuredField.MixProject do
   use Mix.Project
 
   @github "https://github.com/cogini/http_structured_field"
-  @version "0.1.2"
+  @version "0.1.3"
 
   def project do
     [
