@@ -19,15 +19,6 @@ defmodule HttpStructuredField.MixProject do
         # ignore_warnings: "dialyzer.ignore-warnings"
       ],
       test_coverage: [tool: ExCoveralls],
-      preferred_cli_env: [
-        coveralls: :test,
-        "coveralls.detail": :test,
-        "coveralls.post": :test,
-        "coveralls.html": :test,
-        "coveralls.lcov": :test,
-        quality: :test,
-        "quality.ci": :test
-      ],
       description: description(),
       package: package(),
       source_url: @github,
@@ -40,6 +31,19 @@ defmodule HttpStructuredField.MixProject do
   def application do
     [
       extra_applications: [:logger] ++ extra_applications(Mix.env())
+    ]
+  end
+
+  def cli do
+    [
+      preferred_envs: [
+        coveralls: :test,
+        "coveralls.detail": :test,
+        "coveralls.post": :test,
+        "coveralls.html": :test,
+        "coveralls.lcov": :test,
+        quality: :test, "quality.ci": :test
+      ]
     ]
   end
 
